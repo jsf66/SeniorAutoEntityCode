@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--基础框架包括entity层,dao层,service层,serviceImpl层(在该层有对应的dao层实体),以及action层(在改成有对应的service实体) -->
+<infrastructures>
+
+    <infrastructure  templateName="entity.vm" className="${BasePackageEntityName}.${entityName}"/>
+
+    <infrastructure templateName="dao.vm" className="${BasePackageName}.dao.${entityName}Dao"/>
+
+    <infrastructure templateName="service.vm" className="${BasePackageName}.service.${entityName}Service"/>
+
+    <infrastructure  templateName="serviceImpl.vm" className="${BasePackageName}.serviceImpl.${entityName}ServiceImpl">
+        <beanProp  daoName="${entityName}Dao" />
+    </infrastructure>
+
+    <infrastructure  templateName="controller.vm" className="${BasePackageName}.controller.${entityName}Controller">
+        <beanProp  serviceName="${entityName}Service"/>
+    </infrastructure>
+
+</infrastructures>

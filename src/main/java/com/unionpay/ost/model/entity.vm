@@ -1,0 +1,98 @@
+package ${Configuration.getBasePackageEntityName()};
+import java.io.Serializable;
+import java.sql.*;
+import javax.persistence.*;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
+
+/**
+* ${entity.entityName} 实体.
+* @author ${Configuration.getAuthor()}
+*/
+@SuppressWarnings("all")
+#if(${entity.tableInfo.tableName})
+@Entity
+@Table(schema="${Configuration.getSchema()}",name = "${entity.tableInfo.tableName}" )
+#else
+@Embeddable
+#end
+public class ${entity.entityName} implements Serializable {
+
+private static final long serialVersionUID=${SerialVersionUID.genSerialVersionUID()}L;
+
+#foreach($fieldMeta in $entity.fieldMetaList)
+    #if(${fieldMeta.fieldComment})
+private ${fieldMeta.fieldType} ${fieldMeta.fieldName};//${fieldMeta.fieldComment}
+    #else
+private ${fieldMeta.fieldType} ${fieldMeta.fieldName};
+    #end
+#end
+
+// Constructors
+/* default constructor */
+public ${entity.entityName}() {
+
+}
+/** full constructor */
+public ${entity.entityName}(#foreach($fieldMeta in $entity.fieldMetaList)${fieldMeta.fieldType} ${fieldMeta.fieldName}#if($foreach.hasNext),#end#end) {
+#foreach($fieldMeta in $entity.fieldMetaList)
+this.${fieldMeta.fieldName} = ${fieldMeta.fieldName};
+#end
+}
+/*getMethod and setMethod*/
+#foreach($fieldMeta in $entity.fieldMetaList)
+#if(${fieldMeta.whetherPK})
+@Id
+#if(${fieldMeta.sequenceMeta.sequenceName})
+@GeneratedValue(strategy = GenerationType.SEQUENCE,generator="${entity.entityName}_Sequence")
+@SequenceGenerator(name="${entity.entityName}_Sequence", sequenceName="${fieldMeta.sequenceMeta.sequenceName}",initialValue=${fieldMeta.sequenceMeta.sequenceInitialValue},allocationSize=${fieldMeta.sequenceMeta.sequenceAllocationSize})
+#else
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+#end
+#end
+#if(${fieldMeta.fieldType}=="Date")
+@Temporal(TemporalType.TIMESTAMP)
+#end
+#if(${fieldMeta.columnInfo.columnName})
+@Column(name="${fieldMeta.columnInfo.columnName}"#if(!${fieldMeta.whetherNULL}),nullable=false #else,nullable=true#end#if(${fieldMeta.fieldPrecision}),precision=${fieldMeta.fieldPrecision}#if(${fieldMeta.fieldScale}),scale=${fieldMeta.fieldScale}#end#elseif(${fieldMeta.fieldLength}),length=${fieldMeta.fieldLength}#end)
+#else
+@EmbeddedId
+#end
+public ${fieldMeta.fieldType} get${StringUtils.capFirst(${fieldMeta.fieldName})}(){
+return this.${fieldMeta.fieldName};
+}
+
+public void set${StringUtils.capFirst(${fieldMeta.fieldName})}(${fieldMeta.fieldType} ${fieldMeta.fieldName}){
+this.${fieldMeta.fieldName} = ${fieldMeta.fieldName};
+}
+#end
+##说明是复合主键
+#if(!${entity.tableInfo.tableName})
+public boolean equals(Object other){
+    if(this==other){
+    return true;
+    }
+    if(!(other instanceof ${entity.entityName})){
+    return false;
+    }
+    ${entity.entityName} castother=(${entity.entityName})other;
+    #foreach($fieldMeta in $entity.fieldMetaList)
+        if(${fieldMeta.fieldName}!=null?!${fieldMeta.fieldName}.equals(castother.${fieldMeta.fieldName}):castother.${fieldMeta.fieldName}!=null)
+        return false;
+    #end
+}
+public int hashCode(){
+    final int prime=31;
+    int hash=17;
+    #foreach($fieldMeta in $entity.fieldMetaList)
+    #if(${fieldMeta.fieldType}=="String")
+    hash=hash*prime+this.${fieldMeta.fieldName}.hashCode();
+    #else
+    hash=hash*prime+this.${fieldMeta.fieldName};
+    #end
+    #end
+    return hash;
+}
+#end
+}
